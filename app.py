@@ -6,19 +6,29 @@ from email.mime.multipart import MIMEMultipart
 
 import streamlit as st
 
-
-# ========== 页面加载提示 ==========
-st.markdown(
-    """
-    <div style="text-align: center; padding-top: 40px;">
-        <h3>⏳ 服务正在加载，请稍候……</h3>
-        <p>免费服务首次打开约需 30 秒，感谢您的耐心等待。</p>
-    </div>
-    """,
-    unsafe_allow_html=True
+# ========== 页面基础设置（必须放在最前面） ==========
+st.set_page_config(
+    page_title="排班意愿与工作反馈",
+    page_icon="📋",
+    initial_sidebar_state="collapsed",
+    menu_items={
+        'Get Help': None,
+        'Report a bug': None,
+        'About': None
+    }
 )
 
-st.set_page_config(page_title="排班意愿与工作反馈", page_icon="📋")
+# ========== 隐藏 Streamlit 默认菜单和页脚 ==========
+hide_streamlit_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+# ========== 页面标题 ==========
 st.title("📋 排班意愿与工作反馈")
 st.markdown("请根据您的实际需求填写，我会结合大家的意愿尽量协调下个月排班。")
 
@@ -29,7 +39,6 @@ def send_email(form_data):
     sender_email = st.secrets["email"]["sender"]
     sender_password = st.secrets["email"]["password"]
 
-    # 处理多个收件人（逗号分隔）
     receiver_emails = st.secrets["email"]["receiver"]
     if isinstance(receiver_emails, str):
         receiver_emails = [addr.strip()
@@ -66,7 +75,6 @@ def send_email(form_data):
     msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
     try:
-        # 使用 QQ 邮箱 SSL 加密
         server = smtplib.SMTP_SSL('smtp.qq.com', 465)
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, receiver_emails, msg.as_string())
